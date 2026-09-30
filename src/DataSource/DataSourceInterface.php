@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Leoness\AgentSdk\DataSource;
 
+use Leoness\AgentSdk\Exception\UnknownCriterionException;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -33,6 +34,8 @@ interface DataSourceInterface
      * @param array<string, scalar|null> $criteria
      *
      * @return list<array<string, mixed>>
+     *
+     * @throws UnknownCriterionException when a criterion is not one this source declares
      */
     public function fetch(array $criteria): array;
 }

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+    push:
+    pull_request:
+
+# SDK sú čisté kontrakty: žiadne privátne závislosti, takže tento workflow nepotrebuje
+# ani token. Zelený beh na commite je podmienka toho, aby sa z tohto repa dalo inštalovať —
+# App\Packaging\Provision\PackageCi sa naň pýta a bez odpovede inštaláciu odmietne.
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: none
+
+            # Prvá vec, ktorú rozbije preklep v composer.json, je inštalácia balíka na
+            # serveri — a tam sa to prejaví ako zlyhaná operácia, nie ako chyba v repe.
+            - name: Validate
+              run: composer validate --strict
+
+            - name: Install
+              run: composer install --no-interaction --no-progress
+
+            # Balík nemá vlastné testy (je to len DTO a enumy); čo sa dá pokaziť, je syntax
+            # a to, či sa trieda vôbec načíta. Oboje sa inak ukáže až za behu platformy.
+            - name: Lint
+              run: find src -name '*.php' -print0 | xargs -0 -n1 php -l

@@ -50,4 +50,16 @@ interface FinishedRunInterface
      * @return list<RunFileView>
      */
     public function files(): array;
+
+    /**
+     * The files the question carried — what somebody attached when the run was started.
+     *
+     * Separate from {@see self::files()} because they answer opposite questions: one is
+     * what the run produced, the other what it was given. An agent that has to check its
+     * own result against its source needs the second, and inferring it from the first is
+     * not possible at all.
+     *
+     * @return list<RunFileView>
+     */
+    public function inputFiles(): array;
 }

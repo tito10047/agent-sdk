@@ -29,4 +29,15 @@ interface AgentFileAccessInterface
      * when the file is not among that run's output.
      */
     public function findRunOutput(int $runId, int $fileId): ?StoredFileHandleInterface;
+
+    /**
+     * A file the given run was started with, with the id taken from
+     * {@see \Leoness\AgentSdk\FinishedRunInterface::inputFiles()}. Null when the file is
+     * not among that run's input.
+     *
+     * The same bargain as the one above: an agent package reaches the attachments of its
+     * own run and nothing else. What it is for is checking a result against the source it
+     * was made from — an order that arrived as a spreadsheet is in here, not in the text.
+     */
+    public function findRunInput(int $runId, int $fileId): ?StoredFileHandleInterface;
 }

@@ -52,6 +52,7 @@ final readonly class AgentManifest
         public array $modelOptions = [],
         public array $escalationModelIdentifiers = [],
         public bool $requiresManualApproval = true,
+        public bool $requiresOutputTemplate = false,
         public bool $usesMemory = false,
     ) {
     }

@@ -48,6 +48,17 @@ final readonly class ManifestLinter
             $problems[] = new ManifestProblem('promptTemplate', 'prompt je prázdny');
         }
 
+        // An empty string is the mistake worth catching: it reads as "no template" in
+        // every comparison and as "a template" to whoever wrote it. Whether the key names
+        // a kind that exists is the platform's answer — the SDK does not enumerate them,
+        // because which kinds are installed is a property of the installation.
+        if (null !== $manifest->requiresTemplate && '' === trim($manifest->requiresTemplate)) {
+            $problems[] = new ManifestProblem(
+                'requiresTemplate',
+                'druh výstupnej šablóny je prázdny; vynechajte ho, alebo napíšte kľúč druhu (napríklad "xlsx")',
+            );
+        }
+
         $problems = [...$problems, ...$this->inputFieldProblems($manifest)];
 
         $schemaProblem = $this->schemaRules->firstProblem($manifest->outputSchema);

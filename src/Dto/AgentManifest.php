@@ -33,6 +33,8 @@ final readonly class AgentManifest
      * @param list<Role>                $allowedRoles               on top of administrators; empty means administrators only
      * @param array<string, mixed>      $modelOptions
      * @param list<string>              $escalationModelIdentifiers
+     * @param string|null               $requiresTemplate           the kind of output template the
+     *                                                              deliverable needs, by key, or null
      */
     public function __construct(
         public string $code,
@@ -52,7 +54,22 @@ final readonly class AgentManifest
         public array $modelOptions = [],
         public array $escalationModelIdentifiers = [],
         public bool $requiresManualApproval = true,
-        public bool $requiresOutputTemplate = false,
+        /**
+         * Which kind of output template this agent's deliverable needs.
+         *
+         * **A key and not a boolean.** The boolean this replaced could only ever mean
+         * "an uploaded XLSX file", because that was the only kind the platform had — so a
+         * package whose deliverable is a priced offer had no way to say that what it needs
+         * is a record describing a document. The key names a kind the *platform* knows;
+         * the SDK deliberately does not enumerate them, because which kinds exist is a
+         * property of the installation, not of the SDK, and a package pinned to an older
+         * SDK must still be able to name a newer kind.
+         *
+         * {@see \Leoness\AgentSdk\Validation\ManifestLinter} therefore only checks that
+         * it is a non-empty string; whether the key exists is the platform's answer, with
+         * the list of real ones in the message.
+         */
+        public ?string $requiresTemplate = null,
         public bool $usesMemory = false,
     ) {
     }

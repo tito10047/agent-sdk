@@ -13,9 +13,11 @@ use Symfony\Component\DependencyInjection\Attribute\Exclude;
  * that sees `"material": null` is being told the value is unknown, whereas a model that
  * simply does not see the key is being invited to supply it.
  *
- * Everyday negative answers — nothing found, not yours, not allowed — are sentences and
- * not exceptions. A model told "no such product" stops; a model told nothing improvises,
- * and section 11 of the brief is lost in exactly that gap.
+ * Everyday negative answers — nothing found, not yours, not allowed — are a sentence the
+ * model reads, never silence: a model told "no such product" stops; a model told nothing
+ * improvises, and section 11 of the brief is lost in exactly that gap. The sentence travels
+ * as a {@see ToolRefusedException}, so the client also sees it marked as an error rather
+ * than as output it could take for a result.
  */
 #[Exclude]
 final readonly class ToolAnswer

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Leoness\AgentSdk\Dto;
 
 /**
- * What an agent says about the file its run just produced, before anybody is offered it.
+ * What a check says about a file the platform just produced, before anybody is offered it.
  *
  * Three outcomes, not two, and the third is the one that keeps the other two honest:
  *
- * - **accepted** — checked and correct; the file is the run's result.
+ * - **accepted** — checked and correct; the file is the tool's result.
  * - **rejected** — checked and wrong; the file is kept as evidence and *not* handed over,
  *   and the differences go back to the model so it can write it again.
  * - **unverified** — the check could not be made at all (an order that arrived as a scan,

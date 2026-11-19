@@ -7,14 +7,11 @@ namespace Leoness\AgentSdk\Platform;
 use Leoness\AgentSdk\Exception\FileUnreadableException;
 
 /**
- * One stored file an agent was allowed to reach, content included.
+ * One stored file a tool was allowed to reach, content included.
  *
- * The counterpart of {@see \Leoness\AgentSdk\RunFileView}: the view is metadata for
- * deciding whether to say something about a file, this handle is for the narrow cases
- * where an agent legitimately reads content — a deterministic check over its own
- * deliverable, say. How a handle is obtained (and whether the caller was allowed to)
- * is {@see AgentFileAccessInterface}'s problem; by the time one exists, access has
- * been decided.
+ * How a handle is obtained (and whether the caller was allowed to) is
+ * {@see AgentFileAccessInterface}'s problem; by the time one exists, access has been
+ * decided.
  */
 interface StoredFileHandleInterface
 {

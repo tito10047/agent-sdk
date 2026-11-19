@@ -9,17 +9,10 @@ use Leoness\AgentSdk\Catalogue\Dto\CatalogueItem;
 /**
  * Where the platform looks up what it knows about a product.
  *
- * **A port in the SDK with its adapter in a package**, the same arrangement as
- * {@see \Leoness\AgentSdk\DataSource\DataSourceInterface} — and in the SDK rather than in
- * the platform for a reason the platform's own rules enforce: a package may not name an
+ * **A port in the SDK with its adapter in a package** — in the SDK rather than in the
+ * platform for a reason the platform's own rules enforce: a package may not name an
  * `App\*` class at all (`App\Packaging\PackageVet`), so a port declared platform-side could
  * never be implemented by the package that has the data.
- *
- * **Told apart from a data source on purpose**, because the two answer different questions.
- * A data source answers a query the *model* wrote, under the agent's `allowedDataSources`
- * whitelist. This is the platform filling in fields the model must not invent — and it must
- * not depend on a whitelist somebody could forget, because an offer whose products have no
- * e-shop button is a silently worse document rather than a refused one.
  *
  * **Without an implementation everything still works**, deliberately: the item in the
  * payload then has to be complete, and the tool's answer says which fields nobody filled in

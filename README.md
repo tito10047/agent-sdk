@@ -1,63 +1,60 @@
 # leoness/agent-sdk
 
-Kontrakty medzi platformou Leoness AI a agentovými balíkmi. Agentové repozitáre
-závisia **iba** od tohto balíka (a v dev od `leoness/agent-testkit`) — kód core
-aplikácie nikdy nevidia.
+Kontrakty medzi platformou Leoness AI a **balíkmi MCP nástrojov**. Balík závisí **iba**
+od tohto balíka (a v dev od `leoness/agent-testkit`) — kód core aplikácie nikdy nevidí.
+Platforma nemá vlastných agentov ani prompty; balík pridáva nástroje (`#[AsTool]`), ktoré
+volá Claude alebo ChatGPT cez MCP v mene prihláseného používateľa.
 
 ## Čo tu je
 
-- `AgentInterface` + `Dto\AgentManifest` — celý kontrakt kódového agenta; trieda
-  s tagom `AgentInterface::TAG` je agentom od najbližšej synchronizácie.
-- `DeclarativeBlueprintInterface` — agent, ktorý by sa dal naklikať v administrácii,
-  ale balík ho dodáva v kóde, aby ho čerstvé nasadenie malo funkčný. Iba *zasieva*:
-  po publikovaní je to obyčajný deklaratívny agent, ktorý smie operátor prevziať.
-- `HandlesFinishedRun` + `FinishedRunInterface` + `RunFileView` — reakcia agenta
-  na vlastný dokončený beh, cez read-only pohľad namiesto entity.
-- `DataSource\DataSourceInterface` + `DataSourceManifest` — dátové zdroje.
-- `Platform\RecipientDirectoryInterface` — úzky port na e-maily administrátorov.
-- `Platform\RunObserverInterface` — „beh môjho agenta začal / skončil“; jediné dvere
-  do frontovej udalosti platformy. Volá sa pre **každý** beh, takže prvé, čo
-  implementácia urobí, je porovnanie `agentCode()` s vlastným kódom.
-- `Platform\RunDispatchInterface` + `Dto\RunRequestSpec` / `Dto\DispatchedBatch` —
-  fronta. Nemá `requestedBy`: kto sa pýta, dopĺňa platforma z aktuálneho tokenu.
-- `Platform\AgentDirectoryInterface` + `Dto\RunnableAgentVersion` — čo prijíma tá
-  verzia agenta, ktorá by práve teraz bežala.
-- `Platform\AgentAuthorizationInterface` — „smie tento človek spustiť tohto agenta“;
-  odpovedá ten istý voter ako zvyšku platformy. Default deny, nikdy výnimka.
-- `Platform\Entity\AgentRunInterface` a `Platform\Entity\PlatformUserInterface` —
-  read-only pohľad na beh a na konto, a zároveň Doctrine cieľ pre `targetEntity:`
-  vlastnej entity balíka (platforma ich preloží cez `resolve_target_entities`, FK
-  aj `ON DELETE` zostávajú skutočné).
-- `Exception\*` — `UnknownAgentException`, `NoPublishedVersionException`,
-  `InvalidAgentInputException`, `EmptyBatchException`, `FileUnreadableException`.
-  Výnimky platformy ich extendujú, takže `catch` napísaný proti kontraktu chytí
-  skutočnú. `UnknownCriterionException` je opačný smer: hádže ju *balík* zo svojho
-  `DataSourceInterface::fetch()`, keď dostane kritérium, ktoré nedeklaroval.
-- `Tool\ToolAnswer` — ako nástroj odpovedá modelu (JSON s prítomnými prázdnymi
-  kľúčmi, bežné „nenašlo sa“ ako veta, nie výnimka).
-- `Tool\HumanConfirmationInterface` — potvrdenie, ktoré nejde cez model.
+- `Platform\AgentFileAccessInterface` + `Platform\StoredFileHandleInterface` — súbor
+  podľa ID, ktoré používateľ dostal z `priprav_nahratie` alebo z odpovede iného nástroja,
+  vždy v rozsahu toho, čo smie čítať. Súbory sa v argumentoch nikdy neposielajú.
+- `Platform\Entity\PlatformUserInterface` — read-only pohľad na konto a Doctrine cieľ
+  pre `targetEntity:` vlastnej entity balíka (platforma ho preloží cez
+  `resolve_target_entities`).
+- `Confirmation\ConfirmationRequestsInterface` + `Dto\ProposedAction` — akcia, ktorá
+  čaká na človeka: nástroj ju opíše (typ, veta so všetkými číslami, payload) a vráti
+  číslo potvrdenia a podpísaný odkaz (`Dto\IssuedConfirmation`); stav sa pýta nástrojom
+  platformy `stav_potvrdenia`.
+- `Confirmation\ConfirmedActionExecutorInterface` + `Dto\ActionOutcome` — vykonávateľ
+  jedného typu akcie; platforma ho zavolá po potvrdení, pod identitou toho, kto akciu
+  navrhol.
+- `Catalogue\CatalogueItemsInterface` — port, cez ktorý platforma zisťuje údaje
+  o produktoch; adaptér dodáva balík, ktorý dáta má.
+- `Tool\ToolAnswer` — ako nástroj odpovedá modelu (JSON s prítomnými prázdnymi kľúčmi).
+- `Tool\ToolRefusedException` — odmietnutie, s ktorým človek niečo urobí (chýba právo,
+  súbor nie je jeho, záznam neexistuje). MCP server ho vráti ako výsledok s `isError: true`;
+  tú istú triedu používajú nástroje platformy.
 - `Prompt\UntrustedData` — ohradenie dát, ktoré platforma nepísala, aby model videl,
   kde začínajú a končia.
-- Enumy zdieľané s platformou: `RunStatus`, `RunTrigger`, `ModelMode`, `Role`,
-  `AgentInputType`, `OutputFieldKind`, `FactStatus`, `ValidationVerdict`
-  (string hodnoty sú uložené v DB platformy — nemeniť bez major verzie).
-- `Dto\FactClaim` — konvencia „hodnota + stav + zdroj“ pre údaje, ktoré si model
-  nesmie vymyslieť (zadanie §11).
-- `Validation\*` — to isté vynucovanie manifestu, aké robí core pri inštalácii:
-  `OutputSchemaRules` (strict structured output), `ManifestLinter`,
-  `TechnicalFieldLint`, `RuleExpressionLanguage` + `RuleFunctions`.
+- `Dto\FactClaim` + `FactStatus` + `Validation\ClaimRules` — konvencia „hodnota + stav
+  + zdroj“ pre údaje, ktoré si model nesmie vymyslieť (zadanie §11).
+- `Dto\FileVerdict` — výsledok kontroly vytvoreného súboru.
+- `PlatformTools` — názvy nástrojov platformy, na ktoré smie popis nástroja balíka
+  odkázať; `Role` — role, ktoré smie balík kontrolovať.
+- `Exception\FileUnreadableException`, `Support\CanonicalJson`.
 
-## Pravidlá pre agentové balíky
+## Pravidlá pre balíky nástrojov
 
 - Type-hintuj výhradne `Leoness\AgentSdk\*`, `Psr\*`, `Symfony\*` — nikdy `App\*`.
-- Manifest je čistý popis: žiadne query, žiadne hodiny, žiadna náhoda.
+- Každý nástroj má `#[IsGrantedTool('TOOL_<NÁZOV>')]` — oprávnenie je `TOOL_` a názov
+  nástroja veľkými písmenami. Previerka balíka bez toho balík neprijme.
+- Akcia, ktorú model nesmie spraviť sám (hromadný zápis, import), ide cez
+  `ConfirmationRequestsInterface`, nie cez vetu v popise nástroja.
 - Semver: zmena signatúry interfaceu alebo odobratie enum hodnoty = major;
   nový konštruktorový parameter s defaultom = minor.
 
-## Verzia 2.0
+## Verzia 4.1
 
-Čisto aditívna oproti 1.1 — nič sa neodobralo. Major preto, že sa ňou SDK rozšírilo
-z „kontrakty agenta“ na „porty platformy“ (fronta, register, oprávnenia, entity), a
-balíky majú explicitne povedať, že s touto plochou počítajú. Administračné kontrakty
-(menu, odkazy do EasyAdminu) sú v samostatnom `leoness/agent-sdk-admin` — SDK nesmie
-ťahať EasyAdmin.
+Pribudli `Tool\ToolRefusedException`, `Platform\FileDeliveryInterface` (súbor, ktorý nástroj
+vyrobil, ako `StoredFile` s podpísaným odkazom) a `Platform\ModelTimeInterface` (čas pre model
+v ISO 8601 s posunom `Europe/Bratislava`). SDK kvôli výnimke závisí od `symfony/ai-agent`.
+
+## Verzia 4.0
+
+Z SDK zmizli agentové kontrakty — agent, manifest, výstupná schéma, dátové zdroje,
+behy, fronta, register agentov a `HumanConfirmationInterface`;
+`AgentFileAccessInterface` stratil `findRunOutput()` a `findRunInput()`. Pribudol
+kontrakt potvrdenia akcie (`Confirmation\*`). Administračné kontrakty (menu, odkazy do
+EasyAdminu) sú ďalej v `leoness/agent-sdk-admin`.

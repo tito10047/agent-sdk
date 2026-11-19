@@ -1,13 +1,12 @@
 {
     "name": "leoness/agent-sdk",
-    "description": "Kontrakty agentov platformy Leoness AI: čisté DTO, enumy a zdieľané validačné pravidlá manifestu.",
+    "description": "Kontrakty balíkov MCP nástrojov platformy Leoness AI: porty platformy, potvrdenie akcie, hodnotové objekty a enumy.",
     "type": "library",
     "license": "proprietary",
     "require": {
         "php": ">=8.4",
-        "psr/cache": "^3.0",
+        "symfony/ai-agent": "^0.13",
         "symfony/dependency-injection": "^7.2|^8.0",
-        "symfony/expression-language": "^7.2|^8.0",
         "symfony/translation-contracts": "^3.0"
     },
     "require-dev": {
